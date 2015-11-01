@@ -6,7 +6,7 @@ Accept input from user in the format of a sudoku puzzle solution. Input is store
 
 from readchar import readchar #functions readchar() and readkey()
 
-acceptable_digits = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9}
+acceptable_digits = frozenset('0123456789')
 
 def get_digits(size=9):
   """
@@ -17,12 +17,12 @@ def get_digits(size=9):
   for xarg in range(size):
     line = []
     for yarg in range(size):
-      userchar = 99
+      userchar = 'x'
       while userchar not in acceptable_digits:
-        userchar = int(readchar())
+        userchar = readchar()
       line += userchar
       print ' ' + userchar,
-    puzzle += line
+    puzzle.append(line)
     print # carriage return, line feed
   return puzzle
 
@@ -33,18 +33,20 @@ def col_set(puzzle, position, size=9, inclusive=True):
   this_set = set()
   for xarg in range(size):
     if not inclusive and xarg != position[0]:
-      this_set += puzzle[xarg][position[1]]
+      this_set = this_set.union({puzzle[xarg][position[1]]})
   return this_set
 
-def row_set(puzzle, position, size=9):
+def row_set(puzzle, position, size=9, inclusive=True):
   """
   return a set of the values in puzzle for the sector defined inclusive of the position unless overridden
   """
   this_set = set()
-  given_sector = containing_sector(position)
-  for xarg, yarg in given_sector:
-    if not inclusive and [xarg, yarg] != position:
-      this_set += puzzle[xarg][yarg]
+  print puzzle
+  for yarg in range(size):
+    if not inclusive and yarg != position[1]:
+      print (position[0], yarg)
+      this_set = this_set.union({puzzle[position[0]][yarg]})
+  print this_set
   return this_set
 
 def containing_sector(position, size=9):
@@ -61,7 +63,7 @@ def sector_set(puzzle, position, size=9, inclusive=True):
   given_sector = containing_sector(position)
   for xarg, yarg in given_sector:
     if not inclusive and [xarg, yarg] != position:
-      this_set += puzzle[xarg][yarg]
+      this_set = this_set.union({puzzle[xarg][yarg]})
   return this_set
 
 def valid_value(puzzle, position):
@@ -72,11 +74,11 @@ def valid_value(puzzle, position):
   """
   xarg, yarg = position
   value = puzzle[xarg][yarg]
-  if value != 0:
+  if value != '0':
     column = col_set(puzzle, position, inclusive=False)
     row = row_set(puzzle, position, inclusive=False)
     sector = sector_set(puzzle, position, inclusive=False)
-    combined_sets = column + row + sector
+    combined_sets = column.union(row.union(sector))
     if value in combined_sets:
       return False
   return True
@@ -89,7 +91,7 @@ def validate_puzzle(puzzle, solved=True, size=9): #solved=False allows zero as a
   for xarg in range(size):
     for yarg in range(size):
       position_value = puzzle[xarg][yarg]
-      if solved and position_value == 0:
+      if solved and position_value == '0':
         return (xarg, yarg)
       if position_value in digits:
         if not valid_value(puzzle, [xarg, yarg]):
@@ -118,7 +120,7 @@ def ask_user(correction):
   import time
   escapekey = 'esc'
   print '>',
-  correction = readkey()
+  correction = readchar()
   print correction
   time.sleep(10)
   if correction == escapekey:
@@ -133,6 +135,7 @@ def get_corrections(puzzle, pointer=(0, 0)):
   arrowdn = 'down'
   arrowrt = 'right'
   arrowlf = 'left'
+  arrowkeys = {arrowup, arrowdn, arrowrt, arrowlf}
 
   def move_pointer(arrowkey):
     if arrowkey == arrowup:
@@ -144,6 +147,7 @@ def get_corrections(puzzle, pointer=(0, 0)):
     if arrowkey == arrowlf:
       pass
 
+  correction = ''
   display_puzzle(puzzle, highlight=pointer)
   while ask_user(correction):
     if correction in arrowkeys:
@@ -151,7 +155,8 @@ def get_corrections(puzzle, pointer=(0, 0)):
     if correction in acceptable_digits:
       puzzle[pointer] = correction
     display_puzzle(puzzle, highlight=pointer)
-    if valid_puzzle(puzzle):
+    result = validate_puzzle(puzzle)
+    if result:
       break
 
 def main():
