@@ -5,6 +5,7 @@ Accept input from user in the format of a sudoku puzzle solution. Input is store
 """
 
 from readchar import readchar #functions readchar() and readkey()
+import sys
 
 acceptable_digits = frozenset(range(10))
 
@@ -55,7 +56,7 @@ def containing_sector(position, size=9):
                              (6, 0), (6, 3), (6, 6),]
   block_offset_list = [(0, 0), (0, 1), (0, 2),
                        (1, 0), (1, 1), (1, 2),
-                       (2, 0), (2, 1), (2, 2),]                           
+                       (2, 0), (2, 1), (2, 2),]
   for xarg, yarg in sector_coordinates_list:
     for xoffset, yoffset in block_offset_list:
       (xptr, yptr) = (xarg + xoffset, yarg + yoffset)
@@ -112,11 +113,11 @@ def validate_puzzle(puzzle, solved=True, size=9): #solved=False allows zero as a
           return (xarg, yarg)
   return True
 
-def lense_valid(board): 
+def lense_valid(board):
   """
   solution lifted from codewars.com site written by user Gravitational Lense (Lense)
   member of the Clan: Rensselaer Polytechnic Institute
-  This function scans all row and colummns and sectors(Groups) and returns True/False based on 
+  This function scans all row and colummns and sectors(Groups) and returns True/False based on
   wether each block of nine entries correctly contains one entry of each digit from 1 - 9
   (EDIT: this solutiom is flawed)
   """
@@ -145,14 +146,14 @@ def conradical_valid(board): #board[i][j]
     sumtotal = 0
     for row in range(9):
       sumtotal += board[row][col]
-    if sumtotal != 45: 
+    if sumtotal != 45:
       boardvalid = False
   # check rows
   for row in range(9):
     sumtotal = 0
     for col in range(9):
       sumtotal += board[row][col]
-    if sumtotal != 45: 
+    if sumtotal != 45:
       boardvalid = False
   # check regions
   for indx in range(3):
@@ -161,7 +162,7 @@ def conradical_valid(board): #board[i][j]
       for col in range(3):
         for row in range(3):
           sumtotal += board[indx*3+row][jarg*3+col]
-      if sumtotal != 45: 
+      if sumtotal != 45:
         boardvalid = False
   return boardvalid
 
@@ -215,7 +216,7 @@ def werneckpaiva_valid(board):
   for indx in xrange(0, 9):
     (row, col, blk) = (set(), set(), set())
     for jndx in xrange(0, 9):
-      row.add(board[indx][jndx]) 
+      row.add(board[indx][jndx])
       col.add(board[jndx][indx])
       blk.add(board[0 + jndx / 3][((indx * 3) % 9) + jndx % 3])
     #print row
@@ -297,4 +298,4 @@ def main():
   saved_puzzle_filename = save_puzzle(user_input, 'puzzle1')
 
 if __name__ == '__main__':
-  main()
+  sys.exit(main())
